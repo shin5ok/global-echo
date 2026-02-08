@@ -41,6 +41,7 @@ const App: React.FC = () => {
   const [selectedAccent, setSelectedAccent] = useState<Accent>(Accent.USA);
   const [selectedTone, setSelectedTone] = useState<Tone>(Tone.Business);
   const [selectedSpeed, setSelectedSpeed] = useState<number>(50);
+  const [guideFontSize, setGuideFontSize] = useState<number>(24);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [evaluation, setEvaluation] = useState<DetailedEvaluation | null>(null);
@@ -161,7 +162,7 @@ const App: React.FC = () => {
 
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Sidebar: All Controls and Results */}
-        <aside className="w-full lg:w-[420px] bg-white border-r border-slate-200 flex flex-col h-full">
+        <aside className="w-full lg:w-[380px] xl:w-[420px] bg-white border-r border-slate-200 flex flex-col h-full shrink-0">
           <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
             {/* Input Section */}
             <section>
@@ -175,7 +176,7 @@ const App: React.FC = () => {
                 )}
               </div>
               <textarea
-                className="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-transparent outline-none transition-all resize-none text-slate-700 placeholder-slate-400 leading-relaxed text-sm"
+                className="w-full h-28 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-transparent outline-none transition-all resize-none text-slate-700 placeholder-slate-400 leading-relaxed text-sm"
                 value={inputText}
                 onChange={handleInputChange}
                 placeholder="Paste English text here..."
@@ -191,6 +192,25 @@ const App: React.FC = () => {
               >
                 {isFetchingIPA ? 'Analyzing...' : 'Study'}
               </button>
+            </section>
+
+            {/* Visual Settings */}
+            <section className="space-y-4">
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Display Options</label>
+               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[9px] text-slate-400 font-black uppercase">Guide Font Size</span>
+                    <span className="text-[10px] font-bold text-indigo-600">{guideFontSize}px</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="14" 
+                    max="48" 
+                    value={guideFontSize} 
+                    onChange={(e) => setGuideFontSize(Number(e.target.value))}
+                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  />
+               </div>
             </section>
 
             {/* Config Section */}
@@ -264,15 +284,14 @@ const App: React.FC = () => {
             </section>
 
             {/* Evaluation Section in Sidebar */}
-            <section className="pt-4 border-t border-slate-100 min-h-[100px]">
+            <section className="pt-4 border-t border-slate-100">
               {isEvaluating ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-4 text-slate-400">
                   <svg className="animate-spin h-8 w-8 text-indigo-500" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  <p className="text-xs font-bold text-slate-600">AIが評価中...</p>
+                  <p className="text-xs font-bold text-slate-600">AI分析中...</p>
                 </div>
               ) : evaluation ? (
                 <div className="space-y-6">
-                  {/* Overall Result Banner */}
                   <div className="bg-indigo-600 rounded-2xl p-5 text-white shadow-xl flex items-center gap-4">
                     <div className="relative w-16 h-16 shrink-0">
                        <svg className="w-full h-full transform -rotate-90">
@@ -292,12 +311,11 @@ const App: React.FC = () => {
                        </div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-[8px] font-black uppercase tracking-widest opacity-70 mb-1">Overall Assessment</h3>
+                      <h3 className="text-[8px] font-black uppercase tracking-widest opacity-70 mb-1">Assessment</h3>
                       <p className="text-[10px] leading-relaxed font-medium">{evaluation.overallAdvice}</p>
                     </div>
                   </div>
 
-                  {/* Detail Cards */}
                   <div className="grid grid-cols-1 gap-3">
                     <ScoreCard 
                       title="発音" score={evaluation.pronunciation.score} advice={evaluation.pronunciation.advice}
@@ -315,48 +333,47 @@ const App: React.FC = () => {
                       title="区切り" score={evaluation.chunking.score} advice={evaluation.chunking.advice}
                       icon={<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16"></path></svg>}
                     />
-                    <ScoreCard 
-                      title="表現力" score={evaluation.expressiveness.score} advice={evaluation.expressiveness.advice}
-                      icon={<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
-                    />
                   </div>
                 </div>
-              ) : (
-                <div className="py-10 text-center text-slate-300">
-                  <p className="text-[10px] uppercase font-bold tracking-widest">Waiting for practice...</p>
-                </div>
-              )}
+              ) : null}
             </section>
           </div>
         </aside>
 
-        {/* Main Panel: High-Impact Visual Guide */}
-        <main className="flex-1 overflow-y-auto bg-slate-50 p-6 md:p-12 flex flex-col items-center">
-          <div className="w-full max-w-4xl space-y-12">
+        {/* Main Panel: Wide Visual Guide */}
+        <main className="flex-1 overflow-y-auto bg-slate-50 p-4 md:p-8 flex flex-col items-center custom-scrollbar">
+          <div className="w-full max-w-none space-y-8">
             
-            <section className="bg-white p-12 md:p-16 rounded-[40px] shadow-sm border border-slate-200 relative">
-              <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-4">
-                <div className="w-full md:w-1/3 flex justify-start items-center gap-6">
+            <section className="bg-white p-8 md:p-12 lg:p-16 rounded-[40px] shadow-sm border border-slate-200 relative">
+              <div className="flex flex-col lg:flex-row justify-between items-center mb-16 gap-6">
+                <div className="w-full lg:w-1/3 flex justify-start items-center gap-8">
                   <LegendItem color="bg-indigo-500" label="Linking" description="Smooth connection between words" />
                   <LegendItem color="bg-amber-100 border-amber-300" label="Reduced" description="Vowels shortened or changed to Schwa /ə/" />
                 </div>
                 <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] text-center flex-1">Phonetic Visual Guide</h2>
-                <div className="w-full md:w-1/3" />
+                <div className="hidden lg:block lg:w-1/3" />
               </div>
               
-              <div className="flex flex-wrap justify-center items-end gap-x-6 gap-y-24 min-h-[200px]">
+              <div 
+                className="flex flex-wrap justify-center items-end gap-x-8 gap-y-24 min-h-[300px]"
+              >
                 {phoneticData.length > 0 ? (
                   phoneticData.map((item, idx) => (
                     <div key={idx} className="relative flex flex-col items-center group">
-                      <span className={`text-2xl md:text-3xl font-bold px-3 py-1 rounded-xl transition-all duration-300 ${
-                        item.isReduced 
-                        ? 'bg-amber-50 text-slate-500 italic border border-amber-100' 
-                        : 'text-slate-800'
-                      } ${item.linksToNext ? 'border-b-8 border-b-indigo-400/20' : ''} group-hover:text-indigo-600`}>
+                      {/* Main Word Display */}
+                      <span 
+                        style={{ fontSize: `${guideFontSize}px` }}
+                        className={`font-bold px-3 py-1 rounded-xl transition-all duration-300 ${
+                          item.isReduced 
+                          ? 'bg-amber-50 text-slate-500 italic border border-amber-100' 
+                          : 'text-slate-800'
+                        } ${item.linksToNext ? 'border-b-[6px] border-b-indigo-400/20' : ''} group-hover:text-indigo-600 whitespace-nowrap`}
+                      >
                         {item.word}
                       </span>
 
-                      <span className={`text-xs font-mono mt-4 px-4 py-1.5 rounded-full shadow-sm transition-all ${
+                      {/* IPA Tag */}
+                      <span className={`text-[10px] md:text-xs font-mono mt-4 px-4 py-1.5 rounded-full shadow-sm transition-all ${
                         item.isReduced 
                         ? 'bg-slate-50 text-slate-400 border border-slate-200' 
                         : 'bg-indigo-50 text-indigo-600 font-black border border-indigo-100'
@@ -364,19 +381,21 @@ const App: React.FC = () => {
                         /{item.ipa}/
                       </span>
 
+                      {/* Linking Visualizer */}
                       {item.linksToNext && (
-                        <div className="absolute -right-7 bottom-0 translate-y-full flex flex-col items-center z-10 pointer-events-none">
-                          <svg width="40" height="20" viewBox="0 0 24 12" className="text-indigo-500 drop-shadow-md">
-                             <path d="M2 2C8 10 16 10 22 2" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        <div className="absolute -right-8 bottom-0 translate-y-full flex flex-col items-center z-10 pointer-events-none">
+                          <svg width="48" height="24" viewBox="0 0 24 12" className="text-indigo-500 drop-shadow-md">
+                             <path d="M2 2C8 10 16 10 22 2" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                           </svg>
-                          <span className="text-[8px] font-black uppercase text-indigo-500 tracking-tighter mt-1 opacity-70">LINK</span>
+                          <span className="text-[7px] font-black uppercase text-indigo-500 tracking-tighter mt-1 opacity-70">LINK</span>
                         </div>
                       )}
 
+                      {/* Reduction Visualizer */}
                       {item.isReduced && (
-                         <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce-slow">
+                         <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce-slow">
                            <div className="bg-amber-500 text-white text-[8px] font-black px-2 py-1 rounded-md uppercase tracking-tighter shadow-md border border-amber-600/10 whitespace-nowrap">SCHWA /ə/</div>
-                           <div className="w-0.5 h-2 bg-amber-400" />
+                           <div className="w-0.5 h-3 bg-amber-400" />
                          </div>
                       )}
                     </div>
@@ -386,8 +405,7 @@ const App: React.FC = () => {
                     <div className="w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mx-auto mb-6 transform rotate-12">
                        <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
-                    <p className="text-xl font-bold text-slate-400">Your practice guide will appear here</p>
-                    <p className="text-sm text-slate-400 mt-2">Enter some English text on the left and click 'Study'</p>
+                    <p className="text-xl font-bold text-slate-400">Please study text to start</p>
                   </div>
                 )}
               </div>
