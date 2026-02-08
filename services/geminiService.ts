@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Modality, Type, GenerateContentResponse } from "@google/genai";
-import { Accent, Tone } from "../types";
+import { Accent, Tone, DetailedEvaluation } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -66,7 +66,7 @@ export const generateTTS = async (text: string, accent: Accent, tone: Tone, spee
   return audioBuffer;
 };
 
-export const evaluatePronunciation = async (originalText: string, audioBlob: Blob): Promise<string> => {
+export const evaluatePronunciation = async (originalText: string, audioBlob: Blob): Promise<DetailedEvaluation> => {
   const reader = new FileReader();
   const base64Promise = new Promise<string>((resolve) => {
     reader.onloadend = () => {
@@ -78,7 +78,7 @@ export const evaluatePronunciation = async (originalText: string, audioBlob: Blo
   const base64Audio = await base64Promise;
 
   const response: GenerateContentResponse = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-flash-lite-latest',
     contents: {
       parts: [
         {
@@ -88,19 +88,36 @@ export const evaluatePronunciation = async (originalText: string, audioBlob: Blo
           },
         },
         {
-          text: `Evaluate the user's pronunciation of the following English text: "${originalText}". 
-          Analyze accuracy, linking (liaison), reductions (schwa usage), and intonation. 
-          Provide constructive feedback as a list of bullet points in Japanese. 
-          Be specific about which words or phrases need improvement.`
+          text: `Evaluate the user's speaking of the following text: "${originalText}". 
+          Analyze accuracy, linking, reductions, intonation, fluency, and delivery. 
+          
+          You MUST respond in JSON format following this schema:
+          {
+            "overallScore": number (0-100),
+            "pronunciation": { "score": number, "advice": "Japanese text" },
+            "prosody": { "score": number, "advice": "Japanese text" },
+            "fluency": { "score": number, "advice": "Japanese text" },
+            "chunking": { "score": number, "advice": "Japanese text" },
+            "expressiveness": { "score": number, "advice": "Japanese text" }
+          }
+          
+          Advice should be in Japanese and specific to the user's performance.`
         }
       ]
     },
     config: {
-        thinkingConfig: { thinkingBudget: 4000 }
+      responseMimeType: "application/json",
+      // Disabling thinking budget for the fastest possible response time
+      thinkingConfig: { thinkingBudget: 0 }
     }
   });
 
-  return response.text || "No feedback generated.";
+  try {
+    return JSON.parse(response.text || "{}");
+  } catch (e) {
+    console.error("Evaluation parse error:", e);
+    throw new Error("Failed to parse evaluation result.");
+  }
 };
 
 export interface WordIPA {
@@ -113,14 +130,14 @@ export interface WordIPA {
 
 export const getPhoneticTranscription = async (text: string): Promise<WordIPA[]> => {
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-flash-lite-latest',
     contents: `Analyze the following English text for natural connected speech features (linking, reductions, elision) as spoken in standard US English.
     For each word, provide:
     1. The word itself.
-    2. Its IPA transcription in a natural, connected context (e.g., show 'to' as /tə/ if reduced).
-    3. Whether it links to the next word (linksToNext).
-    4. The type of linking if applicable (linkingType, e.g., 'catches it' -> consonant-to-vowel).
-    5. Whether the word is commonly reduced in this sentence (isReduced).
+    2. Its IPA transcription in a natural, connected context.
+    3. Whether it links to the next word.
+    4. The type of linking.
+    5. Whether the word is commonly reduced.
     
     Return as a JSON array.
     Text: "${text}"`,

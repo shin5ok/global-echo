@@ -15,12 +15,16 @@ export enum Tone {
   Serious = 'Serious'
 }
 
-export interface FeedbackItem {
-  category: string;
-  comment: string;
+export interface CategoryEvaluation {
+  score: number;
+  advice: string;
 }
 
-export interface EvaluationResult {
-  score: number;
-  feedback: string[];
+export interface DetailedEvaluation {
+  overallScore: number;
+  pronunciation: CategoryEvaluation;
+  prosody: CategoryEvaluation;
+  fluency: CategoryEvaluation;
+  chunking: CategoryEvaluation;
+  expressiveness: CategoryEvaluation;
 }
