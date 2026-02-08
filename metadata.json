@@ -1,0 +1,7 @@
+{
+  "name": "Global Echo: Accent & Pronunciation Coach",
+  "description": "Master English accents from around the world. Choose from US, Indian, Singaporean, Australian, and Hong Kong accents with various tones. Practice your pronunciation and get detailed AI-powered feedback on linking, reduction, and accuracy.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
