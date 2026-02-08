@@ -22,6 +22,7 @@ export interface CategoryEvaluation {
 
 export interface DetailedEvaluation {
   overallScore: number;
+  overallAdvice: string;
   pronunciation: CategoryEvaluation;
   prosody: CategoryEvaluation;
   fluency: CategoryEvaluation;

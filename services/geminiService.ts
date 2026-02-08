@@ -94,6 +94,7 @@ export const evaluatePronunciation = async (originalText: string, audioBlob: Blo
           You MUST respond in JSON format following this schema:
           {
             "overallScore": number (0-100),
+            "overallAdvice": "Japanese text summary",
             "pronunciation": { "score": number, "advice": "Japanese text" },
             "prosody": { "score": number, "advice": "Japanese text" },
             "fluency": { "score": number, "advice": "Japanese text" },
@@ -101,13 +102,12 @@ export const evaluatePronunciation = async (originalText: string, audioBlob: Blo
             "expressiveness": { "score": number, "advice": "Japanese text" }
           }
           
-          Advice should be in Japanese and specific to the user's performance.`
+          All advice and summary fields should be in Japanese and highly specific to what you hear in the recording.`
         }
       ]
     },
     config: {
       responseMimeType: "application/json",
-      // Disabling thinking budget for the fastest possible response time
       thinkingConfig: { thinkingBudget: 0 }
     }
   });
@@ -124,7 +124,7 @@ export interface WordIPA {
   word: string;
   ipa: string;
   linksToNext?: boolean;
-  linkingType?: string; // e.g. "vowel-to-vowel", "consonant-to-vowel"
+  linkingType?: string;
   isReduced?: boolean;
 }
 
